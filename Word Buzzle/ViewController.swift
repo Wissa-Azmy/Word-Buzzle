@@ -17,6 +17,11 @@ class ViewController: UIViewController {
     var clearBtn: UIButton!
     var buttonsView: UIView!
     var letterBtns = [UIButton]()
+    var activatedBtns = [UIButton]()
+    
+    var solutions = [String]()
+    var score = 0
+    var level = 1
 
     override func loadView() {
         view = UIView()
@@ -33,6 +38,7 @@ class ViewController: UIViewController {
         answerLabel.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
         answerLabel.textAlignment = .right
         answerLabel.text = "ANSWER"
+        answerLabel.numberOfLines = 0
         view.addSubview(answerLabel)
         
         cluesLabel = UILabel()
@@ -40,6 +46,7 @@ class ViewController: UIViewController {
         cluesLabel.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
         cluesLabel.textAlignment = .left
         cluesLabel.text = "CLUES"
+        cluesLabel.numberOfLines = 0
         view.addSubview(cluesLabel)
         
         answerText = UITextField()
@@ -53,11 +60,13 @@ class ViewController: UIViewController {
         submitBtn = UIButton(type: .system)
         submitBtn.translatesAutoresizingMaskIntoConstraints = false
         submitBtn.setTitle("SUBMIT", for: .normal)
+        submitBtn.addTarget(self, action: #selector(submitBtnTapped), for: .touchUpInside)
         view.addSubview(submitBtn)
         
         clearBtn = UIButton(type: .system)
         clearBtn.translatesAutoresizingMaskIntoConstraints = false
         clearBtn.setTitle("CLEAR", for: .normal)
+        clearBtn.addTarget(self, action: #selector(clearBtnTapped), for: .touchUpInside)
         view.addSubview(clearBtn)
         
         buttonsView = UIView()
@@ -115,22 +124,69 @@ class ViewController: UIViewController {
                 letterBtn.titleLabel?.textColor = .blue
                 buttonsView.addSubview(letterBtn)
                 letterBtns.append(letterBtn)
+                letterBtn.addTarget(self, action: #selector(letterBtnTapped), for: .touchUpInside)
             }
         }
         
-        answerLabel.backgroundColor = .red
-        cluesLabel.backgroundColor = .green
-        buttonsView.backgroundColor = .black
-        
     }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        
+        loadLevel()
     }
 
 
+    @objc func letterBtnTapped(_ sender: UIButton) {
+        
+    }
+    
+    
+    @objc func submitBtnTapped(_ sender: UIButton) {
+        
+    }
+    
+    
+    @objc func clearBtnTapped(_ sender: UIButton) {
+        
+    }
+    
+    
+    private func loadLevel() {
+        var clueString = ""
+        var solutionString = ""
+        var letterBits = [String]()
+        
+        if let levelFileURL = Bundle.main.url(forResource: "level\(level)", withExtension: "txt") {
+            if let levelContents = try? String(contentsOf: levelFileURL) {
+                var lines = levelContents.components(separatedBy: "\n")
+                lines.shuffle()
+                
+                for (index, line) in lines.enumerated() {
+                    let parts = line.components(separatedBy: ":")
+                    let answer = parts[0]
+                    let clue = parts[1]
+                    
+                    clueString += "\(index + 1). \(clue)\n"
+                    let solutionWord = answer.replacingOccurrences(of: "|", with: "")
+                    solutionString += "\(solutionWord.count) letters\n"
+                    solutions.append(solutionWord)
+                    
+                    let bits = answer.components(separatedBy: "|")
+                    letterBits += bits
+                }
+                
+                answerLabel.text = solutionString
+                cluesLabel.text = clueString
+                
+                for (index, btn) in letterBtns.enumerated() {
+                    btn.setTitle(letterBits[index], for: .normal)
+                }
+            }
+        }
+
+    }
 }
 
