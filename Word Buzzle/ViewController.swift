@@ -30,7 +30,9 @@ class ViewController: UIViewController {
             scoreLabel.text = "Score: \(score)"
         }
     }
+    var correctAnswers = 0
     var level = 1
+    
 
     override func loadView() {
         view = UIView()
@@ -131,6 +133,8 @@ class ViewController: UIViewController {
                 letterBtn.titleLabel?.font = UIFont.systemFont(ofSize: 36)
                 letterBtn.setTitle("WWW", for: .normal)
                 letterBtn.titleLabel?.textColor = .blue
+                letterBtn.layer.borderWidth = 1
+                letterBtn.layer.borderColor = UIColor.lightGray.cgColor
                 buttonsView.addSubview(letterBtn)
                 letterBtns.append(letterBtn)
                 letterBtn.addTarget(self, action: #selector(letterBtnTapped), for: .touchUpInside)
@@ -161,13 +165,20 @@ class ViewController: UIViewController {
         guard let currentAnswer = answerTxtField.text else {return}
         if let answerIndex = solutions.firstIndex(of: currentAnswer) {
             solutionString[answerIndex] = currentAnswer
+            correctAnswers += 1
             score += 1
             answerTxtField.text = ""
             activatedBtns.removeAll()
+        } else {
+            if score > 0 { score -= 1 }
+            let ac = UIAlertController(title: "Ops!", message: "You hit the wrong letters.", preferredStyle: .alert)
+            let action = UIAlertAction(title: "Try again", style: .default, handler: clear)
+            ac.addAction(action)
+            present(ac, animated: true)
         }
         
         // increase score and check if all words found
-        if score % 7 == 0 {
+        if correctAnswers % 7 == 0 {
             let ac = UIAlertController(title: "Well Dona!", message: "Are you ready for the next level?", preferredStyle: .alert)
             let action = UIAlertAction(title: "Level up", style: .default, handler: levelUp)
             ac.addAction(action)
@@ -179,6 +190,11 @@ class ViewController: UIViewController {
     
     
     @objc func clearBtnTapped(_ sender: UIButton) {
+        clear(action: nil)
+    }
+    
+    
+    func clear(action: UIAlertAction?) {
         answerTxtField.text = ""
         activatedBtns.forEach({$0.isHidden.toggle()})
         activatedBtns.removeAll()
